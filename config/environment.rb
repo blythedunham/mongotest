@@ -14,8 +14,8 @@ Rails::Initializer.run do |config|
   # Add additional load paths for your own custom dirs
   # config.load_paths += %W( #{RAILS_ROOT}/extras )
 
-  config.gem 'mongomapper', :version => '>= 0.2.1'
-  config.gem 'mongo'
+
+  config.gem 'mongo_mapper', :version => '>= 0.2.1', :lib => 'mongomapper'
   config.gem 'tpitale-mongolytics', :lib => 'mongolytics'
   
   # Specify gems that this application depends on and have them installed with rake gems:install
