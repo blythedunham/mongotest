@@ -4,6 +4,18 @@
   <%= f.error_messages %>
 
   <p>
+    <%= f.label :uuid %><br />
+    <%= f.text_field :uuid %>
+  </p>
+  <p>
+    <%= f.label :username %><br />
+    <%= f.text_field :username %>
+  </p>
+  <p>
+    <%= f.label :email %><br />
+    <%= f.text_field :email %>
+  </p>
+  <p>
     <%= f.submit 'Update' %>
   </p>
 <% end %>
