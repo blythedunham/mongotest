@@ -1,0 +1,202 @@
+--- !ruby/object:Gem::Specification 
+name: mongomapper
+version: !ruby/object:Gem::Version 
+  version: 0.4.1
+platform: ruby
+authors: 
+- John Nunemaker
+autorequire: 
+bindir: bin
+cert_chain: []
+
+date: 2009-10-03 00:00:00 -07:00
+default_executable: mmconsole
+dependencies: 
+- !ruby/object:Gem::Dependency 
+  name: activesupport
+  type: :runtime
+  version_requirement: 
+  version_requirements: !ruby/object:Gem::Requirement 
+    requirements: 
+    - - ">="
+      - !ruby/object:Gem::Version 
+        version: "0"
+    version: 
+- !ruby/object:Gem::Dependency 
+  name: mongodb-mongo
+  type: :runtime
+  version_requirement: 
+  version_requirements: !ruby/object:Gem::Requirement 
+    requirements: 
+    - - "="
+      - !ruby/object:Gem::Version 
+        version: 0.14.1
+    version: 
+- !ruby/object:Gem::Dependency 
+  name: jnunemaker-validatable
+  type: :runtime
+  version_requirement: 
+  version_requirements: !ruby/object:Gem::Requirement 
+    requirements: 
+    - - "="
+      - !ruby/object:Gem::Version 
+        version: 1.7.2
+    version: 
+- !ruby/object:Gem::Dependency 
+  name: mocha
+  type: :development
+  version_requirement: 
+  version_requirements: !ruby/object:Gem::Requirement 
+    requirements: 
+    - - "="
+      - !ruby/object:Gem::Version 
+        version: 0.9.4
+    version: 
+- !ruby/object:Gem::Dependency 
+  name: jnunemaker-matchy
+  type: :development
+  version_requirement: 
+  version_requirements: !ruby/object:Gem::Requirement 
+    requirements: 
+    - - "="
+      - !ruby/object:Gem::Version 
+        version: 0.4.0
+    version: 
+description: 
+email: nunemaker@gmail.com
+executables: 
+- mmconsole
+extensions: []
+
+extra_rdoc_files: 
+- LICENSE
+- README.rdoc
+files: 
+- .gitignore
+- LICENSE
+- README.rdoc
+- Rakefile
+- VERSION
+- bin/mmconsole
+- lib/mongomapper.rb
+- lib/mongomapper/associations.rb
+- lib/mongomapper/associations/base.rb
+- lib/mongomapper/associations/belongs_to_polymorphic_proxy.rb
+- lib/mongomapper/associations/belongs_to_proxy.rb
+- lib/mongomapper/associations/many_documents_as_proxy.rb
+- lib/mongomapper/associations/many_documents_proxy.rb
+- lib/mongomapper/associations/many_embedded_polymorphic_proxy.rb
+- lib/mongomapper/associations/many_embedded_proxy.rb
+- lib/mongomapper/associations/many_polymorphic_proxy.rb
+- lib/mongomapper/associations/many_proxy.rb
+- lib/mongomapper/associations/proxy.rb
+- lib/mongomapper/callbacks.rb
+- lib/mongomapper/document.rb
+- lib/mongomapper/dynamic_finder.rb
+- lib/mongomapper/embedded_document.rb
+- lib/mongomapper/finder_options.rb
+- lib/mongomapper/key.rb
+- lib/mongomapper/observing.rb
+- lib/mongomapper/pagination.rb
+- lib/mongomapper/rails_compatibility/document.rb
+- lib/mongomapper/rails_compatibility/embedded_document.rb
+- lib/mongomapper/save_with_validation.rb
+- lib/mongomapper/serialization.rb
+- lib/mongomapper/serializers/json_serializer.rb
+- lib/mongomapper/support.rb
+- lib/mongomapper/validations.rb
+- mongomapper.gemspec
+- test/NOTE_ON_TESTING
+- test/custom_matchers.rb
+- test/functional/associations/test_belongs_to_polymorphic_proxy.rb
+- test/functional/associations/test_belongs_to_proxy.rb
+- test/functional/associations/test_many_documents_as_proxy.rb
+- test/functional/associations/test_many_embedded_polymorphic_proxy.rb
+- test/functional/associations/test_many_embedded_proxy.rb
+- test/functional/associations/test_many_polymorphic_proxy.rb
+- test/functional/associations/test_many_proxy.rb
+- test/functional/test_associations.rb
+- test/functional/test_binary.rb
+- test/functional/test_callbacks.rb
+- test/functional/test_document.rb
+- test/functional/test_embedded_document.rb
+- test/functional/test_pagination.rb
+- test/functional/test_rails_compatibility.rb
+- test/functional/test_validations.rb
+- test/models.rb
+- test/test_helper.rb
+- test/unit/serializers/test_json_serializer.rb
+- test/unit/test_association_base.rb
+- test/unit/test_document.rb
+- test/unit/test_embedded_document.rb
+- test/unit/test_finder_options.rb
+- test/unit/test_key.rb
+- test/unit/test_mongomapper.rb
+- test/unit/test_observing.rb
+- test/unit/test_pagination.rb
+- test/unit/test_rails_compatibility.rb
+- test/unit/test_serializations.rb
+- test/unit/test_support.rb
+- test/unit/test_time_zones.rb
+- test/unit/test_validations.rb
+has_rdoc: true
+homepage: http://github.com/jnunemaker/mongomapper
+licenses: []
+
+post_install_message: 
+rdoc_options: 
+- --charset=UTF-8
+require_paths: 
+- lib
+required_ruby_version: !ruby/object:Gem::Requirement 
+  requirements: 
+  - - ">="
+    - !ruby/object:Gem::Version 
+      version: "0"
+  version: 
+required_rubygems_version: !ruby/object:Gem::Requirement 
+  requirements: 
+  - - ">="
+    - !ruby/object:Gem::Version 
+      version: "0"
+  version: 
+requirements: []
+
+rubyforge_project: mongomapper
+rubygems_version: 1.3.5
+signing_key: 
+specification_version: 3
+summary: Awesome gem for modeling your domain and storing it in mongo
+test_files: 
+- test/custom_matchers.rb
+- test/functional/associations/test_belongs_to_polymorphic_proxy.rb
+- test/functional/associations/test_belongs_to_proxy.rb
+- test/functional/associations/test_many_documents_as_proxy.rb
+- test/functional/associations/test_many_embedded_polymorphic_proxy.rb
+- test/functional/associations/test_many_embedded_proxy.rb
+- test/functional/associations/test_many_polymorphic_proxy.rb
+- test/functional/associations/test_many_proxy.rb
+- test/functional/test_associations.rb
+- test/functional/test_binary.rb
+- test/functional/test_callbacks.rb
+- test/functional/test_document.rb
+- test/functional/test_embedded_document.rb
+- test/functional/test_pagination.rb
+- test/functional/test_rails_compatibility.rb
+- test/functional/test_validations.rb
+- test/models.rb
+- test/test_helper.rb
+- test/unit/serializers/test_json_serializer.rb
+- test/unit/test_association_base.rb
+- test/unit/test_document.rb
+- test/unit/test_embedded_document.rb
+- test/unit/test_finder_options.rb
+- test/unit/test_key.rb
+- test/unit/test_mongomapper.rb
+- test/unit/test_observing.rb
+- test/unit/test_pagination.rb
+- test/unit/test_rails_compatibility.rb
+- test/unit/test_serializations.rb
+- test/unit/test_support.rb
+- test/unit/test_time_zones.rb
+- test/unit/test_validations.rb
