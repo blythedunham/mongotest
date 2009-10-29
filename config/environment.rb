@@ -44,16 +44,5 @@ Rails::Initializer.run do |config|
   # config.i18n.default_locale = :de
 end
 
-mongo_config_file = File.join( Rails.root, 'config', 'mongodb.yml' )
+MongoConfiguration.setup
 
-mongo_configuration = if File.exists?( mongo_config_file)
-  YAML.load(File.read( mongo_config_file ))['RAILS_ENV'] || 'localhost'
-else
-  { 'host' => Rails.configuration.database_configuration[RAILS_ENV]['host'] }
-end
-
-MongoMapper.connection = Mongo::Connection.new(
-  mongo_configuration['host']
-)
-
-MongoMapper.database = "mongotest-#{Rails.env}" if defined?( MongoMapper )
