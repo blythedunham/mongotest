@@ -52,6 +52,7 @@ end
 host = ENV['MONGO_RUBY_DRIVER_HOST'] || 'localhost'
 port = ENV['MONGO_RUBY_DRIVER_PORT'] || Connection::DEFAULT_PORT
 
+puts "HOST: #{host} on port: #{port}"
 connection = Connection.new(host, port)
 connection.drop_database("benchmark")
 db = connection.db('benchmark')
