@@ -17,7 +17,8 @@ Rails::Initializer.run do |config|
 
   config.gem 'mongo_mapper', :version => '>= 0.2.1', :lib => 'mongomapper'
   config.gem 'tpitale-mongolytics', :lib => 'mongolytics'
-  
+  config.gem 'mongo_record'
+
   # Specify gems that this application depends on and have them installed with rake gems:install
   # config.gem "bj"
   # config.gem "hpricot", :version => '0.6', :source => "http://code.whytheluckystiff.net"

@@ -31,18 +31,22 @@ module MongoConfigurationSupport
     connect
   end
 
+  def new_mongo_connection
+    Mongo::Connection.new(
+      host, port, connection_options || {}
+    )
+  end
   def connect!
     if !disabled?
-
       #otherwise default to the the host specified in database.yml
-      MongoMapper.connection = Mongo::Connection.new(
-        host, port, connection_options || {}
-      )
-
+      MongoMapper.connection = new_mongo_connection
       MongoMapper.database = database
+
+      MongoRecord::Base.connection = new_mongo_connection.db( database )
 
       self.host = MongoMapper.database.host
       self.port = MongoMapper.database.port
+      
     end
     connected?
   end
