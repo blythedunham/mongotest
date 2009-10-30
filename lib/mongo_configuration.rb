@@ -31,7 +31,7 @@ module MongoConfigurationSupport
     connect
   end
 
-  def connect
+  def connect!
     if !disabled?
 
       #otherwise default to the the host specified in database.yml
@@ -45,6 +45,14 @@ module MongoConfigurationSupport
       self.port = MongoMapper.database.port
     end
     connected?
+  end
+
+  def connect
+    connect!
+    true
+  rescue => e
+    Rails.logger.error "FAILED TO CONNECT TO MONGO #{ self.connection.inspect }"
+    return false
   end
 
   def connected?
