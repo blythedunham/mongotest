@@ -1,0 +1,85 @@
+= Welcome to MongoRecord
+
+MongoRecord is an ActiveRecord-like framework for the 10gen
+Mongo[http://www.mongodb.org/] database.
+
+This document assumes you have read the Mongo documentation.
+
+A quick code sample:
+
+  require 'rubygems'
+  require 'mongo'
+  require 'mongo_record'
+
+  class Track < MongoRecord::Base
+    collection_name :tracks
+    fields :artist, :album, :song, :track
+    index :artist
+
+    def to_s
+      "artist: #{artist}, album: #{album}, song: #@song, track: #{@track ? @track.to_i : nil}"
+    end
+  end
+
+  MongoRecord::Base.connection =
+    Mongo::Connection.new.db('mongorecord-test')
+
+  t = Track.new(:artist => 'Level 42', :album => 'Standing In The Light',
+                :song => 'Micro-Kid', :track => 1)
+  t.save
+  puts "There are #{Track.count()} tracks."
+  t = Track.find(:first, :conditions => {:song => 'Micro-Kid'})
+  Track.find(:all, :sort => 'song').each { |t| puts t.to_s }
+
+== Installation
+
+First set up Gemcutter
+
+  $ gem install gemcutter
+  $ gem tumble
+
+Then install
+
+  $ gem install mongo_record
+
+MongoRecord depends on the Mongo Ruby Driver, version 0.15.1 or higher.
+Installing the MongoRecord gem will also install the Mongo Ruby Driver if you
+don't have it already.
+
+The source code is available at http://github.com/mongodb/mongo-ruby-driver.
+You can either clone the git repository or download a tarball or zip file.
+Once you have the source, you can use it from wherever you downloaded it or
+you can install it as a gem from the source by typing
+
+  $ rake gem:install
+
+== Getting Started
+
+See the examples, read the MongoRecord::Base and MongoRecord::Cursor
+documentation, and look at tests/test_mongo.rb.
+
+=== Persistence
+
+You can use MongoRecord::Base or talk to the database (stored in the $db
+object) directly.
+
+See MongoRecord::Base and MongoRecord::Cursor.
+
+=== Logger
+
+See MongoRecord::LogDevice. When running outside of the cloud (for example,
+during development), all log messages are echoed to $stderr which is normally
+the console.
+
+== Credits
+Jim Mulholland, jim at squeejee dot com
+* Ability to save custom attributes not declared in the model
+* Save and retrieve custom "_id" fields
+* Find_each functionality
+* Find_last based on the created_at field
+* Assigning created_at and updated_at fields even if they are not declared
+* Alias methods for "first", "last" and "all"
+* Fix for sum method
+
+Clinton R. Nixon, crnixon at gmail dot com
+* Ability to define and query indexes from models
