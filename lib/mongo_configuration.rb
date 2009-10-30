@@ -49,7 +49,6 @@ module MongoConfigurationSupport
 
   def connect
     connect!
-    true
   rescue => e
     Rails.logger.error "FAILED TO CONNECT TO MONGO #{ self.connection.inspect }"
     return false
@@ -59,6 +58,12 @@ module MongoConfigurationSupport
     !!(MongoMapper.connection && MongoMapper.database)
   rescue => e
     return false
+  end
+
+  def driver_connection
+    MongoMapper.connection
+  rescue => e
+    nil
   end
 
   def disabled?; disabled; end
