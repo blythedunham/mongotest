@@ -1,6 +1,16 @@
 
 mongo_driver_bin  = Dir.glob(File.join(Rails.root, 'vendor/gems/mongo-0.*/bin')).first
 
+def simple_stats( options = {} )
+  {
+    :params => [{:param1 => 'd'}],
+    :event_type => "super_#{rand(6666666)}",
+    :user_id => rand(400),
+    :path => 'http://asdf.grapse.com/api/actions?grapes=true',
+    :action => "action_#{rand(50)}"
+  }
+end
+
 namespace :mongo do
 
   desc "Prints out the connection"
@@ -28,4 +38,20 @@ namespace :mongo do
     connection.drop_database( database )
  
   end
+
+
+  desc "Benchmark orms"
+  task :benchmark_orm => :environment do
+    @mongo_connection = MongoConfiguration.driver_connection.
+      db( MongoConfiguration.database ).collection('mongo-statistics')
+
+    n = ( ENV['TIMES'] || 100) .to_i
+    ms = Benchmark.bm( 30 ) do |x|
+      x.report( " Mongo:Connection" )  { n.times { @mongo_connection.insert( simple_stats ) } }
+      x.report( " MongoMapper:Blank" ) { n.times { Stalkerazzi::Trackers::Mongo::Blank.create!( simple_stats ) } }
+      x.report( " MongoMapper:EmbeddedDocument" ) { n.times { Stalkerazzi::Trackers::Mongo::EmbeddedStatistic.create!( simple_stats ) } }
+      x.report( " MongoMapper:Statistic" ) { n.times { Stalkerazzi::Trackers::Mongo::Statistic.create!( simple_stats ) } }
+    end
+  end
+
 end
