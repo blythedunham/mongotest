@@ -40,18 +40,25 @@ namespace :mongo do
   end
 
 
-  desc "Benchmark orms"
+  desc "Benchmark orms DB=dbname TIMES=100"
   task :benchmark_orm => :environment do
-    @mongo_connection = MongoConfiguration.driver_connection.
-      db( MongoConfiguration.database ).collection('mongo-statistics')
+
+    db_name = ENV['DB'] || 'benchmark-orm'
+    connection = MongoConfiguration.driver_connection
+    connection.drop_database( db_name )
+    
+    MongoMapper.database = db_name
+    @db = connection.db( db_name )
+    @collection = @db.collection('driver_statistics_cached')
+    #connection = Connection.new(MongoConfiguration.host, MongoConfigurationMon.port)
 
     n = ( ENV['TIMES'] || 100) .to_i
     ms = Benchmark.bm( 30 ) do |x|
-      x.report( " Mongo:Connection" )  { n.times { @mongo_connection.insert( simple_stats ) } }
+      x.report( " Mongo collection" )  { n.times { @collection.insert( simple_stats ) } }
+      x.report( " Mongo db" )  { n.times { @db.collection('driver_statistics').insert( simple_stats ) } }
       x.report( " MongoMapper:Blank" ) { n.times { Stalkerazzi::Trackers::Mongo::Blank.create!( simple_stats ) } }
       x.report( " MongoMapper:EmbeddedDocument" ) { n.times { Stalkerazzi::Trackers::Mongo::EmbeddedStatistic.create!( simple_stats ) } }
       x.report( " MongoMapper:Statistic" ) { n.times { Stalkerazzi::Trackers::Mongo::Statistic.create!( simple_stats ) } }
     end
   end
-
 end
