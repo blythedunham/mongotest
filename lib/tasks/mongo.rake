@@ -11,6 +11,16 @@ def simple_stats( options = {} )
   }
 end
 
+def mongo_benchmark_connection
+  db_name = ENV['DB'] || 'benchmark-orm'
+  connection = MongoConfiguration.driver_connection
+  connection.drop_database( db_name )
+
+  MongoMapper.database = db_name
+  MongoRecord::Base.connection = connection.db( db_name )
+
+  connection.db( db_name )
+end
 
 namespace :mongo do
 
@@ -42,25 +52,19 @@ namespace :mongo do
 
     desc "Benchmark orms DB=dbname TIMES=100"
     task :orm => :environment do
-
-      db_name = ENV['DB'] || 'benchmark-orm'
-      connection = MongoConfiguration.driver_connection
-      connection.drop_database( db_name )
-
-      MongoMapper.database = db_name
-      MongoRecord::Base.connection = connection.db( db_name )
-
-      @db = connection.db( db_name )
-      @collection = @db.collection('driver_statistics_cached')
-      #connection = Connection.new(MongoConfiguration.host, MongoConfigurationMon.port)
-
       n = ( ENV['TIMES'] || 100) .to_i
       ms = Benchmark.bm( 30 ) do |x|
+        @db = mongo_benchmark_connection
+        @collection = @db.collection('driver_statistics_cached')
         x.report( "Mongo collection" )  { n.times { @collection.insert( simple_stats ) } }
         x.report( "Mongo db" )  { n.times { @db.collection('driver_statistics').insert( simple_stats ) } }
+
+        mongo_benchmark_connection
         x.report( "MongoMapper:Blank" ) { n.times { Stalkerazzi::Trackers::Mongo::Blank.create!( simple_stats ) } }
         x.report( "MongoMapper:EmbeddedDocument" ) { n.times { Stalkerazzi::Trackers::Mongo::EmbeddedStatistic.create!( simple_stats ) } }
         x.report( "MongoMapper:Statistic" ) { n.times { Stalkerazzi::Trackers::Mongo::Statistic.create!( simple_stats ) } }
+
+        mongo_benchmark_connection
         x.report( "MongoRecord:Statistic" ) { n.times { Stalkerazzi::Trackers::MongoRecord::Statistic.create( simple_stats ) } }
         x.report( "MongoRecord:Blank" ) { n.times { Stalkerazzi::Trackers::MongoRecord::Blank.create( simple_stats ) } }
         x.report( "MongoRecord:EmbeddedDocument" ) { n.times { Stalkerazzi::Trackers::MongoRecord::EmbeddedStatistic.create( simple_stats ) } }
