@@ -11,23 +11,13 @@ def simple_stats( options = {} )
   }
 end
 
+
 namespace :mongo do
 
   desc "Prints out the connection"
   task :connection => :environment do
     puts MongoConfiguration.connection.inspect
   end
-
-  desc "Run the benchmarks from the mongo driver"
-  task :driver_benchmarks => :environment do
-    script_file = File.join( mongo_driver_bin, 'standard_benchmark')
-    command = "export MONGO_RUBY_DRIVER_HOST=#{MongoConfiguration.host} && #{script_file}"
-    puts command
-    unless ENV['DRY_RUN']
-      puts system(command)
-    end
-  end
-
   desc "Drop mongo database rake mongo:drop DB=some_db"
   task :drop => :environment do
     database = ENV['DB']
@@ -36,29 +26,45 @@ namespace :mongo do
     raise "Specify database: rake mongo:drop DB=some_db" unless database
     connection = MongoConfiguration.driver_connection
     connection.drop_database( database )
- 
+
   end
+  namespace :benchmark do
+    desc "Run the benchmarks from the mongo driver"
+    task :driver => :environment do
+      script_file = File.join( mongo_driver_bin, 'standard_benchmark')
+      command = "export MONGO_RUBY_DRIVER_HOST=#{MongoConfiguration.host} && #{script_file}"
+      puts command
+      unless ENV['DRY_RUN']
+        puts system(command)
+      end
+    end
 
 
-  desc "Benchmark orms DB=dbname TIMES=100"
-  task :benchmark_orm => :environment do
+    desc "Benchmark orms DB=dbname TIMES=100"
+    task :orm => :environment do
 
-    db_name = ENV['DB'] || 'benchmark-orm'
-    connection = MongoConfiguration.driver_connection
-    connection.drop_database( db_name )
-    
-    MongoMapper.database = db_name
-    @db = connection.db( db_name )
-    @collection = @db.collection('driver_statistics_cached')
-    #connection = Connection.new(MongoConfiguration.host, MongoConfigurationMon.port)
+      db_name = ENV['DB'] || 'benchmark-orm'
+      connection = MongoConfiguration.driver_connection
+      connection.drop_database( db_name )
 
-    n = ( ENV['TIMES'] || 100) .to_i
-    ms = Benchmark.bm( 30 ) do |x|
-      x.report( " Mongo collection" )  { n.times { @collection.insert( simple_stats ) } }
-      x.report( " Mongo db" )  { n.times { @db.collection('driver_statistics').insert( simple_stats ) } }
-      x.report( " MongoMapper:Blank" ) { n.times { Stalkerazzi::Trackers::Mongo::Blank.create!( simple_stats ) } }
-      x.report( " MongoMapper:EmbeddedDocument" ) { n.times { Stalkerazzi::Trackers::Mongo::EmbeddedStatistic.create!( simple_stats ) } }
-      x.report( " MongoMapper:Statistic" ) { n.times { Stalkerazzi::Trackers::Mongo::Statistic.create!( simple_stats ) } }
+      MongoMapper.database = db_name
+      MongoRecord::Base.connection = connection.db( db_name )
+
+      @db = connection.db( db_name )
+      @collection = @db.collection('driver_statistics_cached')
+      #connection = Connection.new(MongoConfiguration.host, MongoConfigurationMon.port)
+
+      n = ( ENV['TIMES'] || 100) .to_i
+      ms = Benchmark.bm( 30 ) do |x|
+        x.report( "Mongo collection" )  { n.times { @collection.insert( simple_stats ) } }
+        x.report( "Mongo db" )  { n.times { @db.collection('driver_statistics').insert( simple_stats ) } }
+        x.report( "MongoMapper:Blank" ) { n.times { Stalkerazzi::Trackers::Mongo::Blank.create!( simple_stats ) } }
+        x.report( "MongoMapper:EmbeddedDocument" ) { n.times { Stalkerazzi::Trackers::Mongo::EmbeddedStatistic.create!( simple_stats ) } }
+        x.report( "MongoMapper:Statistic" ) { n.times { Stalkerazzi::Trackers::Mongo::Statistic.create!( simple_stats ) } }
+        x.report( "MongoRecord:Statistic" ) { n.times { Stalkerazzi::Trackers::MongoRecord::Statistic.create( simple_stats ) } }
+        x.report( "MongoRecord:Blank" ) { n.times { Stalkerazzi::Trackers::MongoRecord::Blank.create( simple_stats ) } }
+        x.report( "MongoRecord:EmbeddedDocument" ) { n.times { Stalkerazzi::Trackers::MongoRecord::EmbeddedStatistic.create( simple_stats ) } }
+      end
     end
   end
 end
