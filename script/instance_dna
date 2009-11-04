@@ -1,0 +1,42 @@
+#!/usr/bin/ruby
+require 'rubygems'
+require 'right_aws'
+require 'json'
+
+unless ARGV.first
+  puts "must supply the environment name"
+  exit(1)
+end
+
+target_environment = ARGV.first
+
+dna = JSON.parse(IO.read('/etc/chef/dna.json'))
+ec2 = RightAws::Ec2.new(dna['aws_secret_id'], dna['aws_secret_key'], :logger => Logger.new("/dev/null"))
+ 
+# ey-recipes returns a list of yoru environment and their instances
+# Current Environments:
+# env: production running instances: 1
+# instance_ids: ["i-4c03b524"]
+result = `ey-recipes`
+found = false
+instances = nil
+ 
+result.each_line do |line|
+  if found
+    line =~ %r{instance_ids: (\[.*\])}
+    instances = eval($1)
+    break
+  end
+  if line =~ %r{env: #{target_environment}}
+    found = true
+  end
+end
+
+aws_data = ec2.describe_instances instances
+
+instance_aws_data = dna['utility_instances'].inject({}) do |map, i|
+  map[ i['name'] ] = aws_data.detect{ |instance| instance[:private_dns_name] == i['hostname'] }
+  map
+end
+
+puts instance_aws_data.to_json
