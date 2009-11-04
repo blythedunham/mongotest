@@ -14,7 +14,7 @@ Rails::Initializer.run do |config|
   # Add additional load paths for your own custom dirs
   # config.load_paths += %W( #{RAILS_ROOT}/extras )
 
-
+  config.gem 'mongo', :version => '>= 0.15.1'
   config.gem 'mongo_mapper', :version => '>= 0.2.1', :lib => 'mongomapper'
   config.gem 'tpitale-mongolytics', :lib => 'mongolytics'
   config.gem 'mongo_record'
@@ -47,3 +47,6 @@ end
 
 MongoConfiguration.setup
 
+Stalkerazzi::Tracker.configure(
+
+)
