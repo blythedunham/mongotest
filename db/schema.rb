@@ -11,6 +11,16 @@
 
 ActiveRecord::Schema.define(:version => 20091021234001) do
 
+  create_table "sitealizer", :force => true do |t|
+    t.string   "path"
+    t.string   "ip"
+    t.string   "referer"
+    t.string   "language"
+    t.string   "user_agent"
+    t.datetime "created_at"
+    t.date     "created_on"
+  end
+
   create_table "users", :force => true do |t|
     t.string   "uuid",                  :limit => 36,                    :null => false
     t.string   "username",              :limit => 20,                    :null => false
