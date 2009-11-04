@@ -20,11 +20,11 @@ module Stalkerazzi
     end
 
     class GfsLogger < Logger
-      self.logger = self.create_logger( File.join( Rails.root, 'gfslogger_' + Time.now.to_s(:db)))
+      #self.logger = self.create_logger( File.join( Rails.root, 'gfslogger_' + Time.now.to_s(:db)))
     end
 
     class LocalLogger < Logger
-      self.logger = self.create_logger( File.join( Rails.root, 'locallogger_' + Time.now.to_s(:db)))
+      #self.logger = self.create_logger( File.join( Rails.root, 'locallogger_' + Time.now.to_s(:db)))
     end
   end
 end
