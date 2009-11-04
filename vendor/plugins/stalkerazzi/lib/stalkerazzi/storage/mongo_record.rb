@@ -28,7 +28,23 @@ if defined?( MongoRecord )
           has_many :params,   :class_name => 'Stalkerazzi::Trackers::MongoRecord::Param'
 
         end
+
+        class TrackedEvent < ::MongoRecord::Base
+          collection_name :tracked_events
+          #fields :event_type, :user_id, :request, :timestamp
+          #index :event_type, :user_id
+          tracked_fields(
+            :event_type => :action_name,
+            :user_id => :current_user_id,
+            :headers => :headers,
+            :timestamp => :timestamp
+          )
+        end
+
       end
     end
   end
 end
+
+
+

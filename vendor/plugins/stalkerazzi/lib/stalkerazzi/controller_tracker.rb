@@ -134,9 +134,26 @@ module Stalkerazzi
     def tracked_params;       [params]; end
     def tracked_controller;   params[:controller].to_s; end
     def tracked_action;       params[:action].to_s; end
-    def tracked_timestamp;    Time.now; end
+    def tracked_timestamp;    Time.now.utc; end
     def tracked_user;         current_user.to_param; end
+
+    %w(user_agent referer remote_addr path_info).each do |method|
+      module_eval <<-END_SRC
+        def tracked_#{method}; request.#{method}; end
+      END_SRC
+      #delegate method, :to => request, :prefix => 'tracked'
+      #define_method( "tracked_#{method}" ) do
+      #  "request.#{method}"
+      #end
+      #END_SRC
+    end
+
+     #           :user_agent => env['HTTP_USER_AGENT'],
+     #       :language => env['HTTP_ACCEPT_LANGUAGE'],
+     #       :path => env['PATH_INFO'],
+     #       :ip => env['REMOTE_ADDR'],
+     #       :referer => env['HTTP_REFERER']
   end
 end
 
-ActionController::Base.send :include, Stalkerazzi::ControllerTracker
+#ActionController::Base.send :include, Stalkerazzi::ControllerTracker

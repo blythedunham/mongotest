@@ -5,7 +5,7 @@ module Stalkerazzi
       class_inheritable_accessor :logger
       self.logger = Rails.logger
 
-      def self.record_tracked_event( data )
+      def self.store_tracked_event( data, options = {} )
         logger.debug "RECORD TRACKER STAT: #{ data.inspect }"
       end
 
