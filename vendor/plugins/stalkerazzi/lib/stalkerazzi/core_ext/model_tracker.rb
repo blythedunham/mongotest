@@ -1,18 +1,4 @@
 module Stalkerazzi
-  module ModelTrackerOld
-    def self.extended( base )
-      base.extend ::Stalkerazzi::DefaultTracking
-    end
-
-    def record_tracked_event( data )
-      create( data )
-    end
-  end
-end
-
-
-
-module Stalkerazzi
   module ModelTracker
     def self.extended( base )
       def self.extended( base )
@@ -32,11 +18,11 @@ module Stalkerazzi
   end
 end
 
-ActiveRecord::Base.extend        Stalkerazzi::ModelTracker
+if defined?( ActiveRecord ) and defined?( ActiveRecord::Base )
+  ActiveRecord::Base.extend        Stalkerazzi::ModelTracker
+end
 
-puts "DEFINED MODEL"
 if defined?( MongoRecord ) and defined?( MongoRecord::Base)
-  puts "MONGO RECORD"
   MongoRecord::Base.class_eval do
     extend Stalkerazzi::ModelTracker 
     class << self
@@ -48,7 +34,7 @@ if defined?( MongoRecord ) and defined?( MongoRecord::Base)
   end
 end
 
-if defined?( MongoMapper )
+if defined?( MongoMapper ) and defined?( MongoMapper::Document )
   #MongoMapper::Document::ClassMethods.send :include, Stalkerazzi::ModelTracker
   #MongoMapper::Document::ClassMethods.send :include, Stalkerazzi::DefaultTracking
   MongoMapper::Document.module_eval do
