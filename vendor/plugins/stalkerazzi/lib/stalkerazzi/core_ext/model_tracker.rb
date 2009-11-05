@@ -3,12 +3,7 @@ module Stalkerazzi
     def self.extended( base )
       def self.extended( base )
         base.extend( Stalkerazzi::CoreExt::TrackingMethods )
-        #class << base
-          #alias_method :record_tracked_event, :create
-        #  delegate :track_event, :to => Stalkerazzi::Tracker
-        #end
-        #base.delegate :track_event, :to => Stalkerazzi::Tracker
-        base.delegate :record_tracked_event, :to => base
+        base.delegate :store_tracked_event, :to => base
       end
     end
 
