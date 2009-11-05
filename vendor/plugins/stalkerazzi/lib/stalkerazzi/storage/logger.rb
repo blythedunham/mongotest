@@ -2,6 +2,7 @@ module Stalkerazzi
   module Storage
     class Logger
       def self.store_tracked_event( data, options = {} )
+        self.logger ||= self.create_logger( File.join( Rails.root, 'log', 'stalkerazzi.log') )
         logger.info data.inspect
       end
 
@@ -13,9 +14,7 @@ module Stalkerazzi
         end
         b_logger
       end
-
       class_inheritable_accessor :logger
-      self.logger ||= self.create_logger( File.join( Rails.root, 'stalkerazzi.log') )
     end
 
 
