@@ -5,7 +5,7 @@ end
 
 if defined?( MongoMapper )
   module Stalkerazzi
-    module Trackers
+    module Storage
       module Mongo
         class Session
           include MongoMapper::EmbeddedDocument

@@ -7,7 +7,7 @@ module Stalkerazzi
       end
     end
 
-    def store_tracked_event( data, options )
+    def store_tracked_event( data, options = {} )
       create( data )
     end
   end

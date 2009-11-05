@@ -5,7 +5,7 @@ end
 
 if defined?( MongoRecord )
   module Stalkerazzi
-    module Trackers
+    module Storage
       module MongoRecord
         class Session < ::MongoRecord::Base
         end
@@ -24,8 +24,8 @@ if defined?( MongoRecord )
         class EmbeddedStatistic < ::MongoRecord::Base
           collection_name :embedded_statistics
           fields :user_id, :event_type, :controller, :action, :path
-          has_many :sessions, :class_name => 'Stalkerazzi::Trackers::MongoRecord::Session'
-          has_many :params,   :class_name => 'Stalkerazzi::Trackers::MongoRecord::Param'
+          has_many :sessions, :class_name => 'Stalkerazzi::Storage::MongoRecord::Session'
+          has_many :params,   :class_name => 'Stalkerazzi::Storage::MongoRecord::Param'
 
         end
 

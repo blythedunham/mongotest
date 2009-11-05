@@ -1,22 +1,22 @@
 class TrackersController < ApplicationController
 
   track_event_for :mongomapper_statistic,
-    :tracker_class => 'Stalkerazzi::Trackers::Mongo::Statistic',
+    :tracker_class => 'Stalkerazzi::Storage::Mongo::Statistic',
     :data => :simple_stats
 
   track_event_for :mongomapper_embedded_statistic,
-    :tracker_class => 'Stalkerazzi::Trackers::Mongo::EmbeddedStatistic',
+    :tracker_class => 'Stalkerazzi::Storage::Mongo::EmbeddedStatistic',
     :data => :simple_stats
 
   track_event_for :mongomapper_blank,
-    :tracker_class => 'Stalkerazzi::Trackers::Mongo::Blank',
+    :tracker_class => 'Stalkerazzi::Storage::Mongo::Blank',
     :data => :simple_stats
 
-  track_event_for :simple_log,   :tracker_class => 'Stalkerazzi::Trackers::Logger',
+  track_event_for :simple_log,   :tracker_class => 'Stalkerazzi::Storage::Logger',
     :data => :simple_stats
-  track_event_for :gfs_logger,   :tracker_class => 'Stalkerazzi::Trackers::GfsLogger',
+  track_event_for :gfs_logger,   :tracker_class => 'Stalkerazzi::Storage::GfsLogger',
     :data => :simple_stats
-  track_event_for :local_logger, :tracker_class => 'Stalkerazzi::Trackers::LocalLogger',
+  track_event_for :local_logger, :tracker_class => 'Stalkerazzi::Storage::LocalLogger',
     :data => :simple_stats
 
   TRACKED_ACTIONS = %w(mongomapper_statistic mongomapper_blank
@@ -38,7 +38,7 @@ class TrackersController < ApplicationController
   end
 
   def mongomapper_filterless
-    Stalkerazzi::Trackers::Mongo::Statistic.create!( simple_stats )
+    Stalkerazzi::Storage::Mongo::Statistic.create!( simple_stats )
     render :text => 'ok'
   end
 
