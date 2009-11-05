@@ -7,23 +7,9 @@ module Stalkerazzi
 
         class_inheritable_hash :stalkerazzi_options
         self.stalkerazzi_options = {
-          :logger => (ActiveRecord::Base.logger if Rails.env != 'production'),
-          :storage => 'Stalkerazzi::Trackers::Logger'
+          :logger => (ActiveRecord::Base.logger if Rails.env != 'production')
         }
 
-        class_inheritable_accessor :tracker_fields
-        self.tracker_fields = {
-          :controller => :tracked_controller,
-          :action     => :tracked_action,
-          :path       => :tracked_path,
-          :headers    => :tracked_headers,
-          :session    => :tracked_session,
-          :timestamp  => :tracked_timestamp,
-          :params     => :tracked_params,
-          :remote_ip  => :remote_ip,
-          :referrer   => :referer,
-          :user_id    => :tracked_user
-        }
         extend( ClassMethods )
       end
     end
@@ -51,11 +37,10 @@ module Stalkerazzi
       end
     end
 
-
     # Tracker classes should implement :perform_tracking and :store_data
     def store_data( data, options ={} )
       log_stored_event( data )
-      invoke_method_for_class( :storage, :store_tracked_event, options, data, ActiveRecord::Base )
+      invoke_method_for_class( :storage, :store_tracked_event, options, data )
     end
 
     def log_stored_event( data )
@@ -114,7 +99,7 @@ module Stalkerazzi
 
     def invoke_method_for_class( key, method, options = {}, method_options ={}, default_class = nil)
       klass = class_for_setting( key, options, method_options, default_class )
-      puts "INVOKE: b=#{klass.inspect} m=#{method.inspect} k=#{key}"
+      puts "INVOKE: klass=#{klass.inspect} m=#{method.inspect} k=#{key}"
       klass.try( method, method_options || options )
     end
 
