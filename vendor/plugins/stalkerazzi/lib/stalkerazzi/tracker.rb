@@ -10,6 +10,8 @@ module Stalkerazzi
           :logger => (ActiveRecord::Base.logger if Rails.env != 'production')
         }
 
+        class_inheritable_hash :tracked_fields
+        self.tracked_fields = {}
         extend( ClassMethods )
       end
     end
@@ -103,6 +105,21 @@ module Stalkerazzi
       klass.try( method, method_options || options )
     end
 
+    def log_exception(exception, callstack = false)
+      msg = "Stalkerazzi exception: #{exception}"
+      msg << "\n #{exception.backtrace.to_yaml}" if callstack
+      puts msg
+      logger.error( msg ) if logger
+    end
+
+    def handle_tracking_exception( exception )
+      case stalkerazzi_options[:handle_exception]
+        when Proc then stalkerazzi_options[:handle_exception].call( exception )
+        when TrueClass then log_exception( exception, true )
+        else raise exception
+      end
+    end
+
     # Track a statistic from the controller
     # *options* - can be a proc that returns the data to use or a hash specifying
     #   the parameters to generate the hash data
@@ -127,15 +144,19 @@ module Stalkerazzi
       if options[:only]
         options.delete(:except)
         key_names = key_names & Array(options[:only]).collect { |n| n.to_s }
-      else
+
+      elsif options[:except]
         options[:except] = Array(options[:except])
         key_names = key_names - options[:except].collect { |n| n.to_s }
       end
 
-      key_names.inject( options[:default_data] || {} ) do |data, name|
-        data[ name.to_sym ] = tracked_event_field_data( name ) unless data.has_key?( name )
-        data
+      event_data = (options[:default_data] || {}).symbolize_keys
+
+      key_names.each do |name|
+        next if data.has_key?( name.to_sym )
+        event_data[ name.to_sym ] = tracked_event_field_data( name )
       end
+
     end
 
     def tracked_event_field_data( name, tracked_statistics = nil )
@@ -162,7 +183,7 @@ module Stalkerazzi
     end
   end
 
-  module TrackingMethodHelper
+  module TrackingCurrentController
     #predefined methods
     def headers
       request.headers.reject { |k,v| !v.is_a?( String ) } if request.try( :headers )
@@ -186,7 +207,7 @@ module Stalkerazzi
       module_eval "def #{method}; controller.try(:#{method}); end ", __FILE__, __LINE__
     end
 
-    def with_controller( controller, save_thread = false, &block )
+    def with_controller( controller, &block )
       self.controller = controller
       yield
     ensure
@@ -219,10 +240,16 @@ module Stalkerazzi
   class Tracker
     include Singleton
     include Tracking
-    include TrackingMethodHelper
+    include TrackingCurrentController
 
     def track_event( options = {} )
       invoke_method_for_class( :tracker, :perform_tracking, options, nil, Stalkerazzi::Tracker )
+    rescue => e
+      handle_tracking_exception e
+    end
+
+    def track_event_with( data, options = {})
+      track_event( options.merge( :default_data => data ) )
     end
 
     def track_event_with_controller( controller, options = {} )
