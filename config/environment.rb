@@ -45,8 +45,14 @@ Rails::Initializer.run do |config|
   # config.i18n.default_locale = :de
 end
 
-MongoConfiguration.setup
+raise "Mongodb unavailable in production" if !MongoConfiguration.setup && Rails.env == 'production'
 
 Stalkerazzi::Tracker.configure(
-
+  :handle_exception => true,
+  :storage => MongoConfiguration.connected? ?
+    Stalkerazzi::Storage::MongoRecord::TrackedEvent :
+    Stalkerazzi::Storage::Logger
 )
+
+
+#Stalkerazzi::Storage::Logger.logger = ActiveRecord::Base.logger
