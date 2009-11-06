@@ -47,6 +47,8 @@ end
 
 raise "Mongodb unavailable in production" if !MongoConfiguration.setup && Rails.env == 'production'
 
+Dir.glob( File.dirname(__FILE__) + '/../vendor/plugins/stalkerazzi/test/models/*.rb' ) {|f| puts f; require f}
+
 Stalkerazzi::Tracker.configure(
   :handle_exception => true,
   :storage => MongoConfiguration.connected? ?

@@ -45,7 +45,8 @@ if defined?( MongoRecord )
             :event_type => :action_name,
             :user_id => :current_user_id,
             :headers => :headers,
-            :timestamp => :timestamp
+            :timestamp => :timestamp,
+            :lang => :language
           )
 
 
