@@ -14,14 +14,14 @@ class TrackersController < ApplicationController
 
   track_event_for :simple_log,   :storage => 'Stalkerazzi::Storage::Logger',
     :with => :simple_stats
-  track_event_for :gfs_logger,   :storage => 'Stalkerazzi::Storage::GfsLogger',
-    :with => :simple_stats
-  track_event_for :local_logger, :storage => 'Stalkerazzi::Storage::LocalLogger',
-    :with => :simple_stats
+  #track_event_for :gfs_logger,   :storage => 'Stalkerazzi::Storage::GfsLogger',
+  #  :with => :simple_stats
+  #track_event_for :local_logger, :storage => 'Stalkerazzi::Storage::LocalLogger',
+  #  :with => :simple_stats
 
   TRACKED_ACTIONS = %w(mongomapper_statistic mongomapper_blank
     mongomapper_embedded_statistic simple_log
-    gfs_logger local_logger) unless defined?( TRACKED_ACTIONS )
+     ) unless defined?( TRACKED_ACTIONS )
 
   TRACKED_ACTIONS.each do |method|
 
@@ -43,6 +43,7 @@ class TrackersController < ApplicationController
   end
 
   def ar_test
+    puts "LANG#{request.accept_language}"
     User.create(:uuid => rand(3453434534535), :username => 'asdfasdf' + rand(10000).to_s )
     render :text => 'ok'
   end
