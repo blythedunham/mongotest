@@ -72,7 +72,7 @@ module Stalkerazzi
       with = options.delete( :with )
       data = case with
         when Proc then with.call( object )
-        when String, Symbol then object.send( object )
+        when String, Symbol then object.send( with )
         when Hash then with
       end || {}
       track_event( data, options )
