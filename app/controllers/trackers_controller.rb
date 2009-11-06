@@ -1,23 +1,23 @@
 class TrackersController < ApplicationController
 
   track_event_for :mongomapper_statistic,
-    :tracker_class => 'Stalkerazzi::Storage::Mongo::Statistic',
-    :data => :simple_stats
+    :storage => 'Stalkerazzi::Storage::Mongo::Statistic',
+    :with => :simple_stats
 
   track_event_for :mongomapper_embedded_statistic,
-    :tracker_class => 'Stalkerazzi::Storage::Mongo::EmbeddedStatistic',
-    :data => :simple_stats
+    :storage => 'Stalkerazzi::Storage::Mongo::EmbeddedStatistic',
+    :with => :simple_stats
 
   track_event_for :mongomapper_blank,
-    :tracker_class => 'Stalkerazzi::Storage::Mongo::Blank',
-    :data => :simple_stats
+    :storage => 'Stalkerazzi::Storage::Mongo::Blank',
+    :with => :simple_stats
 
-  track_event_for :simple_log,   :tracker_class => 'Stalkerazzi::Storage::Logger',
-    :data => :simple_stats
-  track_event_for :gfs_logger,   :tracker_class => 'Stalkerazzi::Storage::GfsLogger',
-    :data => :simple_stats
-  track_event_for :local_logger, :tracker_class => 'Stalkerazzi::Storage::LocalLogger',
-    :data => :simple_stats
+  track_event_for :simple_log,   :storage => 'Stalkerazzi::Storage::Logger',
+    :with => :simple_stats
+  track_event_for :gfs_logger,   :storage => 'Stalkerazzi::Storage::GfsLogger',
+    :with => :simple_stats
+  track_event_for :local_logger, :storage => 'Stalkerazzi::Storage::LocalLogger',
+    :with => :simple_stats
 
   TRACKED_ACTIONS = %w(mongomapper_statistic mongomapper_blank
     mongomapper_embedded_statistic simple_log
