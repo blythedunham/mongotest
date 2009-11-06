@@ -226,7 +226,7 @@ module Stalkerazzi
     end
 
     def track_event_with_controller( controller, data = {}, options = {} )
-      with_controller( self ) { track_event_for_object( self, options ) }
+      with_controller( controller ) { track_event_for_object( self, options ) }
     end
 
     private
