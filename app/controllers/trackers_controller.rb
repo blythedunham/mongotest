@@ -26,7 +26,7 @@ class TrackersController < ApplicationController
   TRACKED_ACTIONS.each do |method|
 
     define_method( method ) do
-      render :text => 'ok'
+      render :text => action_name
     end
   end
 
@@ -34,6 +34,16 @@ class TrackersController < ApplicationController
     collection = MongoMapper.connection.db(MongoMapper.database.name).collection('standalone')
     collection.insert( simple_stats )
 
+    render :text => 'ok'
+  end
+
+  def blah
+    track_event(:event_type => 'asdasdf')
+    render :text => 'blah'
+  end
+
+  def ar_test
+    User.create(:uuid => rand(3453434534535), :username => 'asdfasdf' + rand(10000).to_s )
     render :text => 'ok'
   end
 

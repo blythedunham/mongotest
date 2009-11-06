@@ -17,10 +17,12 @@ if defined?( MongoMapper )
 
         class Blank
           include MongoMapper::Document
+          acts_as_stalkerazzi_data_store
         end
 
         class Statistic
           include MongoMapper::Document
+          acts_as_stalkerazzi_data_store
 
           key :user_id, Integer
           key :event_type, String
@@ -33,6 +35,7 @@ if defined?( MongoMapper )
 
         class EmbeddedStatistic
           include MongoMapper::Document
+          acts_as_stalkerazzi_data_store
 
           key :user_id, Integer
           key :event_type, String

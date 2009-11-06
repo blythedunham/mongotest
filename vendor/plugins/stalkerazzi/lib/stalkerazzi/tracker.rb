@@ -10,101 +10,87 @@ module Stalkerazzi
           :logger => (ActiveRecord::Base.logger if Rails.env != 'production')
         }
 
-        class_inheritable_hash :tracked_fields
-        self.tracked_fields = {}
+        class_inheritable_hash :default_tracked_fields
+        self.default_tracked_fields = {
+          :action => :action_name,
+          :controller => :controller_name,
+          :path => :path
+        }
+
         extend( ClassMethods )
       end
     end
 
     module ClassMethods
+      # Configure stalkerazzi
       def configure( options={} )
         options.symbolize_keys!
 
-        track_fields( options.delete( :fields ) )
-
+        self.default_tracked_fields = options.delete( :fields ) if options.has_key?( :fields )
         self.logger = options.delete( :logger ) if options.has_key?( :logger )
-
         self.stalkerazzi_options.update( options )
       end
+    end
 
-      def track_field( field_name, value)
-        track_fields( field_name => value )
+    # Store the data with the specified storage mechanism.
+    # Storage can be either a Proc or a symbol, string or class
+    # Storage classes implement +store_tracked_event+
+    def store_data( data, options = {})
+      storage ||= storage_class( options[ :storage ] )
+      log( "Storing data with #{storage.inspect}\n  #{data.inspect}")
+
+      if storage.is_a?( Proc )
+        storage.call( data, self )
+
+      elsif storage
+        storage.store_tracked_event( data, self )
       end
 
-      def track_fields( field_map = {} )
-        unless field_map.blank?
-          stalkerazzi_options[:fields]||={}
-          stalkerazzi_options[:fields].update( field_map.symbolize_keys )
-        end
-      end
     end
 
-    # Tracker classes should implement :perform_tracking and :store_data
-    def store_data( data, options ={} )
-      log_stored_event( data )
-      invoke_method_for_class( :storage, :store_tracked_event, options, data )
-    end
 
-    def log_stored_event( data )
-      puts "Tracked data: #{data.inspect}" if Rails.env == 'development'
-      logger.debug( "Tracked data: #{data.inspect}") if logger
-    end
 
     # Track events by saving
-    #
-    # ===Options
     # <tt>:data</tt> - (Optional) A hash or a proc that returns a hash of the
     #    raw  data. When not specified, +tracked_event_data+ is invoked to format
     #    the data
-    # <tt>:tracker</tt> - The class name of the ActiveRecord, Document, or other object
-    #    used to record the data. Defaults +Statistic+
+    # ===Options
+    # <tt>:storage</tt> - The class name of the ActiveRecord, Document, or other object
+    #    used to store the data. Defaults +Logger+
     # <tt>:fields</tt> - Additional field mappings
     # <tt>:default_data</tt> - Default the fields specified here
     # <tt>:only</tt>
-    def perform_tracking( tracker_options ={} )
-      options = tracker_options.reverse_merge( stalkerazzi_options )
-      data = options.delete( :data )
-      statistic_data = case data
-         when Hash then data
-         when Proc then options.call( self, options )
-         when String, Symbol then controller.send( data, options ) if controller
-         else tracked_event_data( options )
-      end
-      store_data( statistic_data, options )
+    def track_event( data = {}, options = {} )
+      track_event!( data, options )
+    rescue => e
+      handle_tracking_exception e
     end
 
-    # return the class or object
-    def class_for_setting( key, options = {}, method_options = {}, default_class = nil )
-      class_for_value(
-        tracker_setting( key, options ),
-        method_options || options ,
-        default_class
-      )
+    # Track event for an object.
+    # This allows the :with parameter to be a Proc or Method on the object
+    def track_event_for_object( object, options )#:nodoc:
+      with = options.delete( :with )
+      data = case with
+        when Proc then with.call( object )
+        when String, Symbol then object.send( object )
+        when Hash then with
+      end || {}
+      track_event( data, options )
     end
 
-    # Look for the setting first in the options hash, then in the default values
-    def tracker_setting( key, options ={} )
-      options[ key ] || stalkerazzi_options[ key ]
+    protected
+
+    def log( message, level = :debug )
+      puts message if Rails.env == 'development'
+      logger.send( :level, message ) if logger
     end
 
-    # Return the class represented by the symbol, class or string
-    # If klass is a proc, then it is invoked with the method options
-    def class_for_value( klass, options ={}, default_class = nil)
-      case klass
-        when NilClass then default_class
-        when Proc then klass.call( method_options || options ) and return nil
-        when Symbol then klass.to_s.classify.constantize
-        when String then klass.constantize
-        else klass
-      end
-    end
 
-    def invoke_method_for_class( key, method, options = {}, method_options ={}, default_class = nil)
-      klass = class_for_setting( key, options, method_options, default_class )
-      puts "INVOKE: klass=#{klass.inspect} m=#{method.inspect} k=#{key}"
-      klass.try( method, method_options || options )
+    # Track data without handling exceptions
+    def track_event!( data = {}, options = {})#:nodoc:
+      transformed_data = transform_data( data, options )
+      store_data( transformed_data, options )
     end
-
     def log_exception(exception, callstack = false)
       msg = "Stalkerazzi exception: #{exception}"
       msg << "\n #{exception.backtrace.to_yaml}" if callstack
@@ -118,6 +104,24 @@ module Stalkerazzi
         when TrueClass then log_exception( exception, true )
         else raise exception
       end
+    end
+
+    # Find the storage class which implements method +store_tracked_event+
+    # from a string, symbol or class
+    def storage_class( class_name )
+      name = class_name || stalkerazzi_options[ :storage ]
+      name = name.to_s.classify.constantize if name.is_a?( String ) || name.is_a?( Symbol )
+      name
+    end
+
+    def tracked_fields( options ={} )
+      storage = storage_class( options[ :storage ] )
+
+      tracked_statistics = unless storage.try( :tracked_fields ).blank?
+        storage.tracked_fields
+      else
+        self.default_tracked_fields || {}
+      end.merge( options[:fields] || {} )
     end
 
     # Track a statistic from the controller
@@ -135,12 +139,19 @@ module Stalkerazzi
     # * <tt>:only</tt> - include this field
     # * <tt>:default_data </tt> - a hash of defaulted data
     # * <tt>:fields</tt> - additional tracked statistics
-    def tracked_event_data( options = {} )
-      puts options.inspect
-      tracked_statistics = (stalkerazzi_options[:fields]||{}).merge( options[:fields] || {} )
+    def transform_data( data = {}, options = {} )
+
+      event_data = if data.is_a?( Proc )
+        data.call( self, options )
+      else
+        data || {}
+      end.symbolize_keys
+
+      tracked_statistics = tracked_fields( options )
 
       key_names = tracked_statistics.keys
 
+      puts "TRACKING: #{tracked_statistics.inspect}"
       if options[:only]
         options.delete(:except)
         key_names = key_names & Array(options[:only]).collect { |n| n.to_s }
@@ -150,35 +161,27 @@ module Stalkerazzi
         key_names = key_names - options[:except].collect { |n| n.to_s }
       end
 
-      event_data = (options[:default_data] || {}).symbolize_keys
-
       key_names.each do |name|
-        next if data.has_key?( name.to_sym )
-        event_data[ name.to_sym ] = tracked_event_field_data( name )
+        next if event_data.has_key?( name.to_sym )
+        event_data[ name.to_sym ] = tracked_event_field_data( 
+          name, tracked_statistics[name], options
+        )
       end
-
+      event_data
     end
 
-    def tracked_event_field_data( name, tracked_statistics = nil )
-      tracked_statistics ||= stalkerazzi_options[:fields]
+    def tracked_event_field_data( name, tracked_method, options = {})
+      if tracked_method.is_a?( Proc )
+        tracked_method.call( self, options )
 
-      if tracked_statistics.has_key?( name.to_sym )
-        tracked_method = tracked_statistics[ name.to_sym ] || name
+      elsif respond_to?( tracked_method )
+        send( tracked_method ).to_s
 
-        if tracked_method.is_a?( Proc )
-          tracked_method.call( self )
+      elsif request.respond_to?( tracked_method )
+        request.send( tracked_method ).to_s
 
-        elsif respond_to?( tracked_method )
-          send( tracked_method ).to_s
-
-        elsif request.respond_to?( tracked_method )
-          request.send( tracked_method ).to_s
-
-        else
-          name
-        end
       else
-        nil
+        name
       end
     end
   end
@@ -222,6 +225,10 @@ module Stalkerazzi
       Thread.current[:stalkerazzi_controller] = controller
     end
 
+    def track_event_with_controller( controller, data = {}, options = {} )
+      with_controller( self ) { track_event_for_object( self, options ) }
+    end
+
     private
     def method_missing(method, *arguments, &block)
       return if controller.nil?
@@ -242,24 +249,10 @@ module Stalkerazzi
     include Tracking
     include TrackingCurrentController
 
-    def track_event( options = {} )
-      invoke_method_for_class( :tracker, :perform_tracking, options, nil, Stalkerazzi::Tracker )
-    rescue => e
-      handle_tracking_exception e
-    end
-
-    def track_event_with( data, options = {})
-      track_event( options.merge( :default_data => data ) )
-    end
-
-    def track_event_with_controller( controller, options = {} )
-      with_controller( controller ) { track_event( options) }
-    end
-
     public
     class << self
       #Not working to delegate via: delegate method, :to => Stalkerazzi::Tracker.instance
-      %w(store_data perform_tracking track_event track_event_with_controller).each do |method|
+      %w(store_data track_event with_controller track_event_with_controller track_event_for_object).each do |method|
         class_eval <<-END_SRC, __FILE__, __LINE__
           def #{method}(*args)
             Stalkerazzi::Tracker.instance.#{method}(*args)

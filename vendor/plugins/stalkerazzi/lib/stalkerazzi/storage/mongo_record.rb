@@ -14,14 +14,18 @@ if defined?( MongoRecord )
         end
 
         class Blank < ::MongoRecord::Base
+          acts_as_stalkerazzi_data_store
         end
 
         class Statistic < ::MongoRecord::Base
           collection_name :statistics
           fields :user_id, :event_type, :controller, :action, :path, :sessions, :params
+          acts_as_stalkerazzi_data_store
         end
 
         class EmbeddedStatistic < ::MongoRecord::Base
+          acts_as_stalkerazzi_data_store
+
           collection_name :embedded_statistics
           fields :user_id, :event_type, :controller, :action, :path
           has_many :sessions, :class_name => 'Stalkerazzi::Storage::MongoRecord::Session'
@@ -30,21 +34,23 @@ if defined?( MongoRecord )
         end
 
         class TrackedEvent < ::MongoRecord::Base
+
+
           collection_name :tracked_events
-          #fields :event_type, :user_id, :request, :timestamp
+          fields :application_id, :event_type, :user_id, :request, :timestamp
+          
           #index :event_type, :user_id
-          tracked_fields(
+          acts_as_stalkerazzi_data_store(
+            :application_id => lambda{ rand(50000) },
             :event_type => :action_name,
             :user_id => :current_user_id,
             :headers => :headers,
             :timestamp => :timestamp
           )
-        end
 
+
+        end
       end
     end
   end
 end
-
-
-

@@ -6,8 +6,6 @@ module Stalkerazzi
           class << base
             #alias_method :record_tracked_event, :create
             delegate :track_event, :to => Stalkerazzi::Tracker
-            delegate :track_fields, :to => Stalkerazzi::Tracker
-            delegate :track_field, :to => Stalkerazzi::Tracker
           end
           base.delegate :track_event, :to => Stalkerazzi::Tracker
         end

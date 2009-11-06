@@ -1,6 +1,8 @@
 module Stalkerazzi
   module Storage
     class Logger
+      include Stalkerazzi::Storage::DataStore
+
       def self.store_tracked_event( data, options = {} )
         self.logger ||= self.create_logger( File.join( Rails.root, 'log', 'stalkerazzi.log') )
         logger.info data.inspect
