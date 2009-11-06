@@ -124,20 +124,12 @@ module Stalkerazzi
       end.merge( options[:fields] || {} )
     end
 
-    # Track a statistic from the controller
-    # *options* - can be a proc that returns the data to use or a hash specifying
-    #   the parameters to generate the hash data
+    # Return a hash with the data to be tracked
+    # +data+ - A hash or a proc that returns a hash containing prepopulated data.
+    # The request and controller data will be merged with this hash.
     # === Options
     # * <tt>:except</tt> - exclude this data
     # * <tt>:only</tt> - include this field
-    # * <tt>:default</tt> - the default data to start with
-    # * <tt>:fields</tt> - additional tracked statistics
-
-    # Generate a statistic hash
-    # === Options
-    # * <tt>:except</tt> - exclude this data
-    # * <tt>:only</tt> - include this field
-    # * <tt>:default_data </tt> - a hash of defaulted data
     # * <tt>:fields</tt> - additional tracked statistics
     def transform_data( data = {}, options = {} )
 
@@ -175,10 +167,10 @@ module Stalkerazzi
         tracked_method.call( self, options )
 
       elsif respond_to?( tracked_method )
-        send( tracked_method ).to_s
+        send( tracked_method )
 
       elsif request.respond_to?( tracked_method )
-        request.send( tracked_method ).to_s
+        request.send( tracked_method )
 
       else
         name
