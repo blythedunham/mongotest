@@ -2,7 +2,7 @@ module Stalkerazzi
   module RequestContext
 
     # predefined controller methods
-    %w(session request response params action_name current_user).each do |method|
+    %w(session request response params action_name).each do |method|
       module_eval "def #{method}; controller.try(:#{method}); end ", __FILE__, __LINE__
     end
 
@@ -34,6 +34,7 @@ module Stalkerazzi
     def controller_name;   params[:controller].to_s if params; end
     def timestamp;         Time.now.utc; end
     def current_user_id;   current_user.try(:id); end
+    def current_user;      controller.try(:current_user); rescue; end
 
     def controller_and_action
       "#{controller.controller_name}_#{controller.action_name}" if controller
