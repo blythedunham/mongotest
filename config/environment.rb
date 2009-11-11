@@ -45,13 +45,13 @@ Rails::Initializer.run do |config|
   # config.i18n.default_locale = :de
 end
 
-raise "Mongodb unavailable in production" if !MongoConfiguration.setup && Rails.env == 'production'
+raise "Mongodb unavailable in production" if !MongoConnect.setup! && Rails.env == 'production'
 
-Dir.glob( File.dirname(__FILE__) + '/../vendor/plugins/stalkerazzi/test/models/*.rb' ) {|f| puts f; require f}
+Dir.glob( File.dirname(__FILE__) + '/../vendor/plugins/stalkerazzi/test/models/*.rb' ) {|f| require f}
 
 Stalkerazzi::Tracker.configure(
   :handle_exception => true,
-  :storage => MongoConfiguration.connected? ?
+  :storage => MongoConnect.connected? ?
     Stalkerazzi::Storage::MongoRecord::TrackedEvent :
     Stalkerazzi::Storage::Logger
 )

@@ -128,7 +128,7 @@ module MongoConfigurationSupport
 
 end
 
-class MongoConfiguration
+class MongoConfigurationVERYOLD
   include Singleton
   extend MongoConfigurationSupport
 
