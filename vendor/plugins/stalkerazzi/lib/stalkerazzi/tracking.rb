@@ -2,12 +2,14 @@ module Stalkerazzi
   module Tracking
     def self.included( base )
       base.class_eval do
+
         class_inheritable_accessor :logger
-        self.logger = nil
+        self.logger = (ActiveRecord::Base.logger if Rails.env != 'production')
 
         class_inheritable_hash :stalkerazzi_options
         self.stalkerazzi_options = {
-          :logger => (ActiveRecord::Base.logger if Rails.env != 'production')
+          :enabled => true,
+          :handle_exception => true
         }
 
         class_inheritable_hash :default_tracked_fields
@@ -35,7 +37,7 @@ module Stalkerazzi
     # Store the data with the specified storage mechanism.
     # Storage can be either a Proc or a symbol, string or class
     # Storage classes implement +store_tracked_event+
-    def store_data( data, options = {})
+    def store_data( data, options = {}, storage = nil)
       storage ||= storage_class( options[ :storage ] )
       log( "Storing data with #{storage.inspect}\n  #{data.inspect}")
 
@@ -69,6 +71,7 @@ module Stalkerazzi
     # Track event for an object.
     # This allows the :with parameter to be a Proc or Method on the object
     def track_event_for_object( object, options )#:nodoc:
+      return unless enabled?
       with = options.delete( :with )
       data = case with
         when Proc then with.call( object )
@@ -78,24 +81,29 @@ module Stalkerazzi
       track_event( data, options )
     end
 
+    def enabled?
+      !!stalkerazzi_options[:enabled]
+    end
+
     protected
 
     def log( message, level = :debug )
       puts message if Rails.env == 'development'
-      logger.send( :level, message ) if logger
+      logger.send( level, message ) if logger
     end
 
 
     # Track data without handling exceptions
     def track_event!( data = {}, options = {})#:nodoc:
+      return unless enabled?
       transformed_data = transform_data( data, options )
       store_data( transformed_data, options )
     end
+ 
     def log_exception(exception, callstack = false)
       msg = "Stalkerazzi exception: #{exception}"
       msg << "\n #{exception.backtrace.to_yaml}" if callstack
-      puts msg
-      logger.error( msg ) if logger
+      log msg, :error
     end
 
     def handle_tracking_exception( exception )
@@ -143,7 +151,7 @@ module Stalkerazzi
 
       key_names = tracked_statistics.keys
 
-      puts "TRACKING: #{tracked_statistics.inspect}"
+      log "TRACKING: #{tracked_statistics.inspect}"
       if options[:only]
         options.delete(:except)
         key_names = key_names & Array(options[:only]).collect { |n| n.to_s }

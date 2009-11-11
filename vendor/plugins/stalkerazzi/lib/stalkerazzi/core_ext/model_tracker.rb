@@ -28,6 +28,7 @@ module Stalkerazzi
 
       tracker_proc = lambda{ |record|
         Stalkerazzi::Tracker.track_event_for_object( record, options )
+        true
       }
 
       send( callback, tracker_proc, callback_options )
@@ -40,7 +41,6 @@ module Stalkerazzi
     end
 
     def store_tracked_event( data, options = {} )
-      puts "CREATE DATA: #{data.inspect}"
       create( data )
     end
   end
