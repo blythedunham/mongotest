@@ -13,7 +13,7 @@ end
 
 def mongo_benchmark_connection
   db_name = ENV['DB'] || 'benchmark-orm'
-  connection = MongoConfiguration.driver_connection
+  connection = MongoConnect.driver_connection
   connection.drop_database( db_name )
 
   MongoMapper.database = db_name
@@ -26,15 +26,15 @@ namespace :mongo do
 
   desc "Prints out the connection"
   task :connection => :environment do
-    puts MongoConfiguration.connection.inspect
+    puts MongoConnect.connection.inspect
   end
   desc "Drop mongo database rake mongo:drop DB=some_db"
   task :drop => :environment do
     database = ENV['DB']
-    database ||= MongoConfiguration.database if Rails.env != 'production'
+    database ||= MongoConnect.database if Rails.env != 'production'
 
     raise "Specify database: rake mongo:drop DB=some_db" unless database
-    connection = MongoConfiguration.driver_connection
+    connection = MongoConnect.driver_connection
     connection.drop_database( database )
 
   end
@@ -42,7 +42,7 @@ namespace :mongo do
     desc "Run the benchmarks from the mongo driver"
     task :driver => :environment do
       script_file = File.join( mongo_driver_bin, 'standard_benchmark')
-      command = "export MONGO_RUBY_DRIVER_HOST=#{MongoConfiguration.host} && #{script_file}"
+      command = "export MONGO_RUBY_DRIVER_HOST=#{MongoConnect.host} && #{script_file}"
       puts command
       unless ENV['DRY_RUN']
         puts system(command)
